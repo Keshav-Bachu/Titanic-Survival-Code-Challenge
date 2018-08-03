@@ -26,8 +26,8 @@ Xdata = XData.values
 Ydata = Ydata.reshape(1, Ydata.shape[0])
 Xdata = Xdata.T
 
-networkShape = [64, 64, 32, 32, 64, 16, 16, 8, 1]
-a, b = TM.trainModel(Xdata, Ydata, networkShape, itterations= 30000, learning_rate=0.00004, weightsExist=a)
+networkShape = [128, 256, 128, 64, 64, 32, 32, 64, 64, 128, 16, 16, 8, 1]
+a, b = TM.trainModel(Xdata, Ydata, networkShape, itterations= 30000, learning_rate=0.00006)
 
 
 Xtest = pd.read_csv('test.csv')
