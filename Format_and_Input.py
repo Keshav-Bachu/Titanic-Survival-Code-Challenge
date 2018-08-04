@@ -12,6 +12,7 @@ import numpy as np
 data = pd.read_csv('train.csv')  
 data['Sex'] = data['Sex'].map({'female': 1, 'male': 0})
 data['Embarked'] = data['Embarked'].map({'Q': 1, 'S': 0, 'C':2})
+data['Age'] = data['Age'].fillna(27)
 data = data.fillna(-1)
 
 
@@ -29,12 +30,12 @@ Xdata = Xdata.T
 Xtest = Xdata[:, 801:]
 Ytest = Ydata[:, 801:]
 
-Xdata = Xdata[: , 0:800]
-Ydata = Ydata[:, 0:800]
+Xdata = Xdata[: , :800]
+Ydata = Ydata[:, :800]
 
 
-networkShape = [128, 128, 128, 64, 64, 32, 64, 16, 16, 16, 1]
-a, b = TM.trainModel(Xdata, Ydata, networkShape, itterations= 0000, learning_rate=0.00005   , weightsExist=a)
+networkShape = [16,16,16,16,1]
+a, b = TM.trainModel(Xdata, Ydata, networkShape, itterations= 10000, learning_rate=0.004)
 
 
 """
@@ -42,6 +43,8 @@ Xtest = pd.read_csv('test.csv')
 Xtest = Xtest.drop(columns = ['Name', 'Cabin', 'Ticket', 'PassengerId'])
 Xtest['Sex'] = Xtest['Sex'].map({'female': 1, 'male': 0})
 Xtest['Embarked'] = Xtest['Embarked'].map({'Q': 1, 'S': 0, 'C':2})
+Xtest['Age'] = Xtest['Age'].fillna(27)
+Xtest = Xtest.fillna(-1)
 
 Ytest = pd.read_csv('gender_submission.csv')
 Ytest = Ytest.drop(columns = ['PassengerId'])
@@ -53,4 +56,10 @@ Ytest = Ytest.reshape(1, Ytest.shape[0])
 Xtest = Xtest.T
 """
 
-_, check = TM.predictor(a, networkShape, Xtest, Ytest)
+#_, check = TM.predictor(a, networkShape, Xtest, Ytest)
+
+"""
+df = pd.DataFrame(check.T)
+df = df.astype(int)
+df.to_csv("file_path.csv")
+"""

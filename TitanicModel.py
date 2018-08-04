@@ -62,8 +62,8 @@ def forwardProp(X, placeholders, networkShape, keep_probability = None):
         
         pass_Z = tf.matmul(val_W, pass_A) + val_b
         pass_A = tf.nn.relu(pass_Z)
-        if(keep_probability != None and i != totalLength - 1):
-            pass_A = tf.nn.dropout(pass_A, keep_probability)
+        #if(keep_probability != None and i != totalLength - 1):
+            #pass_A = tf.nn.dropout(pass_A, keep_probability)
     
     return pass_Z
 
@@ -73,7 +73,7 @@ def computeCost(finalZ, Y, weights = None):
     labels = tf.transpose(Y)
     
     length = len(weights)
-    reg_lambda = 0
+    reg_lambda = 0.01
     
     cost = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits = logits, labels = labels))
     #regularizationL2 = lambda/(2 * M) * norm(w) ** 2
@@ -109,7 +109,7 @@ def trainModel(xTest, yTest,netShape, xDev = None, yDev = None,  learning_rate =
     Zfinal = forwardProp(X, placeholders, networkShape, keep_probability)
     cost = computeCost(Zfinal, Y, placeholders)
     #optimizer = tf.train.AdamOptimizer(learning_rate = learning_rate).minimize(cost)
-    optimizer = tf.train.GradientDescentOptimizer(learning_rate = learning_rate).minimize(cost)
+    optimizer = tf.train.AdamOptimizer(learning_rate = learning_rate).minimize(cost)
     
     
     #Set global variables and create a session
