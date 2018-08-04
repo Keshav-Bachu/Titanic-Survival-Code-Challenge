@@ -26,10 +26,18 @@ Xdata = XData.values
 Ydata = Ydata.reshape(1, Ydata.shape[0])
 Xdata = Xdata.T
 
-networkShape = [128, 256, 128, 64, 64, 32, 32, 64, 64, 128, 16, 16, 8, 1]
-a, b = TM.trainModel(Xdata, Ydata, networkShape, itterations= 30000, learning_rate=0.00006)
+Xtest = Xdata[:, 801:]
+Ytest = Ydata[:, 801:]
+
+Xdata = Xdata[: , 0:800]
+Ydata = Ydata[:, 0:800]
 
 
+networkShape = [128, 128, 128, 64, 64, 32, 64, 16, 16, 16, 1]
+a, b = TM.trainModel(Xdata, Ydata, networkShape, itterations= 0000, learning_rate=0.00005   , weightsExist=a)
+
+
+"""
 Xtest = pd.read_csv('test.csv')
 Xtest = Xtest.drop(columns = ['Name', 'Cabin', 'Ticket', 'PassengerId'])
 Xtest['Sex'] = Xtest['Sex'].map({'female': 1, 'male': 0})
@@ -43,5 +51,6 @@ Ytest = Ytest.values
 
 Ytest = Ytest.reshape(1, Ytest.shape[0])
 Xtest = Xtest.T
+"""
 
-TM.predictor(a, networkShape, Xtest, Ytest)
+_, check = TM.predictor(a, networkShape, Xtest, Ytest)

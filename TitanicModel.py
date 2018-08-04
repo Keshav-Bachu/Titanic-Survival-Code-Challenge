@@ -44,7 +44,7 @@ def setVariables(weightsExist):
 
 
 #Forward propogation using a, relu and sigmoid function on respective layers (relu 1 - n-1 layer and sigmoid for n layer)
-def forwardProp(X, placeholders, networkShape, dropout = False):
+def forwardProp(X, placeholders, networkShape, keep_probability = None):
     #total number of parameters in the network, divided by 2 for the number of layers within it with X being 0
     totalLength = len(placeholders)/2
     totalLength = int(totalLength)
@@ -62,8 +62,7 @@ def forwardProp(X, placeholders, networkShape, dropout = False):
         
         pass_Z = tf.matmul(val_W, pass_A) + val_b
         pass_A = tf.nn.relu(pass_Z)
-        if(dropout == True and i != totalLength - 1):
-            keep_probability = tf.placeholder("float")
+        if(keep_probability != None and i != totalLength - 1):
             pass_A = tf.nn.dropout(pass_A, keep_probability)
     
     return pass_Z
@@ -74,7 +73,7 @@ def computeCost(finalZ, Y, weights = None):
     labels = tf.transpose(Y)
     
     length = len(weights)
-    reg_lambda = 0.1
+    reg_lambda = 0
     
     cost = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits = logits, labels = labels))
     #regularizationL2 = lambda/(2 * M) * norm(w) ** 2
@@ -99,13 +98,15 @@ def trainModel(xTest, yTest,netShape, xDev = None, yDev = None,  learning_rate =
     networkShape.insert(0, Xlen)
     
     X, Y = createPlaceholders(xTest, yTest)
+    keep_probability = tf.placeholder(tf.float32)
+    
     if(weightsExist == None):
         placeholders = createVariables(networkShape)
     else:
         placeholders = setVariables(weightsExist)
     
     #define how Z and cost should be calculated
-    Zfinal = forwardProp(X, placeholders, networkShape)
+    Zfinal = forwardProp(X, placeholders, networkShape, keep_probability)
     cost = computeCost(Zfinal, Y, placeholders)
     #optimizer = tf.train.AdamOptimizer(learning_rate = learning_rate).minimize(cost)
     optimizer = tf.train.GradientDescentOptimizer(learning_rate = learning_rate).minimize(cost)
@@ -118,7 +119,7 @@ def trainModel(xTest, yTest,netShape, xDev = None, yDev = None,  learning_rate =
         sess.run(init)
         #temp_cost = 0 
         for itter in range(itterations):
-            _,temp_cost = sess.run([optimizer, cost], feed_dict={X:xTest, Y: yTest})
+            _,temp_cost = sess.run([optimizer, cost], feed_dict={X:xTest, Y: yTest, keep_probability: 1})
             
             if(itter % 100 == 0):
                 print("Current cost of the function after itteraton " + str(itter) + " is: \t" + str(temp_cost))
@@ -129,13 +130,13 @@ def trainModel(xTest, yTest,netShape, xDev = None, yDev = None,  learning_rate =
             
             
         parameters = sess.run(placeholders)
-        Youtput = Zfinal.eval({X: xTest, Y: yTest})
+        Youtput = Zfinal.eval({X: xTest, Y: yTest, keep_probability: 1})
         #tf.eval(Zfinal)
         
         #confidance level of 75% can be adjusted later
         prediction = tf.equal(tf.greater(Zfinal, tf.constant(0.5)), tf.greater(Y, tf.constant(0.5)))
         accuracy = tf.reduce_mean(tf.cast(prediction, "float"))
-        print ("Train Accuracy:", accuracy.eval({X: xTest, Y: yTest}))
+        print ("Train Accuracy:", accuracy.eval({X: xTest, Y: yTest, keep_probability: 1}))
         #print ("Test Accuracy:", accuracy.eval({X: xDev, Y: yDev}))
         plt.plot(costs)
         
@@ -150,19 +151,21 @@ def predictor(weights, networkShape, xTest, yTest):
     networkShape2.insert(0, Xlen)
     
     X, Y = createPlaceholders(xTest, yTest)
+    keep_probability = tf.placeholder(tf.float32)
+    
     placeholders = setVariables(weights)
-    Zfinal = forwardProp(X, placeholders, networkShape2)
+    Zfinal = forwardProp(X, placeholders, networkShape2, keep_probability)
     
     init = tf.global_variables_initializer()
     with tf.Session() as sess:
         sess.run(init)
         
-        Youtput = Zfinal.eval({X: xTest, Y: yTest}) 
+        Youtput = Zfinal.eval({X: xTest, Y: yTest, keep_probability: 1}) 
         
         prediction = tf.equal(tf.greater(Zfinal, tf.constant(0.5)), tf.greater(Y, tf.constant(0.5)))
         accuracy = tf.reduce_mean(tf.cast(prediction, "float"))
-        checkVector = prediction.eval({X: xTest, Y: yTest})
-        print ("Train Accuracy:", accuracy.eval({X: xTest, Y: yTest}))
+        checkVector = prediction.eval({X: xTest, Y: yTest, keep_probability: 1})
+        print ("Train Accuracy:", accuracy.eval({X: xTest, Y: yTest, keep_probability: 1}))
     
     return Youtput, checkVector
 
