@@ -77,8 +77,8 @@ def computeCost(finalZ, Y, weights = None):
     
     cost = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits = logits, labels = labels))
     #regularizationL2 = lambda/(2 * M) * norm(w) ** 2
-    regularization = tf.nn.l2_loss(weights['W' + str( int(length/2) - 1)]) + tf.nn.l2_loss(weights['W' + str( int(length/2))]) + tf.nn.l2_loss(weights['W' + str( int(length/2) - 2)])
-    cost = tf.reduce_mean(cost + reg_lambda * regularization)
+    #regularization = tf.nn.l2_loss(weights['W' + str( int(length/2) - 1)]) + tf.nn.l2_loss(weights['W' + str( int(length/2))]) + tf.nn.l2_loss(weights['W' + str( int(length/2) - 2)])
+    #cost = tf.reduce_mean(cost + reg_lambda * regularization)
     return cost
 
 #Training the model, X and Y inputs for training and testing NN
@@ -135,12 +135,14 @@ def trainModel(xTest, yTest,netShape, xDev = None, yDev = None,  learning_rate =
         
         #confidance level of 75% can be adjusted later
         prediction = tf.equal(tf.greater(Zfinal, tf.constant(0.5)), tf.greater(Y, tf.constant(0.5)))
+        predOut = prediction.eval({X: xTest, Y: yTest, keep_probability: 1})
+        
         accuracy = tf.reduce_mean(tf.cast(prediction, "float"))
         print ("Train Accuracy:", accuracy.eval({X: xTest, Y: yTest, keep_probability: 1}))
         #print ("Test Accuracy:", accuracy.eval({X: xDev, Y: yDev}))
         plt.plot(costs)
         
-    return parameters, Youtput
+    return parameters, Youtput, predOut.astype(int)
 
 
 def predictor(weights, networkShape, xTest, yTest):
@@ -163,9 +165,11 @@ def predictor(weights, networkShape, xTest, yTest):
         Youtput = Zfinal.eval({X: xTest, Y: yTest, keep_probability: 1}) 
         
         prediction = tf.equal(tf.greater(Zfinal, tf.constant(0.5)), tf.greater(Y, tf.constant(0.5)))
+        predOut = prediction.eval({X: xTest, Y: yTest, keep_probability: 1})
+        
         accuracy = tf.reduce_mean(tf.cast(prediction, "float"))
         checkVector = prediction.eval({X: xTest, Y: yTest, keep_probability: 1})
         print ("Train Accuracy:", accuracy.eval({X: xTest, Y: yTest, keep_probability: 1}))
     
-    return Youtput, checkVector
+    return Youtput, checkVector, predOut.astype(int)
 
